@@ -1,106 +1,109 @@
-Ansible Role: Hashicorp Vault Server Installation and Configuration
-=========
+# Ansible Role: OpenBao Server Installation and Configuration
 
-This role install and configure [Hashicorp Vault](https://www.vaultproject.io/) in a linux server.
+This role installs and configures [OpenBao](https://openbao.org) on a Linux server.
 
-
-Requirements
-------------
+## Requirements
 
 None
 
-Role Variables
---------------
+## Role Variables
 
 Available variables are listed below along with default values (see `defaults\main.yaml`)
 
-- Vault server installation details
+- OpenBao server installation details
 
-  Vault UNIX user/group
+  OpenBao UNIX user/group
+
   ```yml
-  vault_group: vault
-  vault_user: vault
-  ```
-  
-  Vault package and version to be installed
-  ```yml
-  vault_version: 1.12.2
+  openbao_group: openbao
+  openbao_user: openbao
   ```
 
-  Vault installation Paths
+  OpenBao package and version to be installed
 
   ```yml
-  vault_bin_path: /usr/local/bin
-  vault_config_path: /etc/vault
-  vault_tls_path: /etc/vault/tls
-  vault_plugin_path: /usr/local/lib/vault/plugins
-  vault_data_path: /var/lib/vault
-  vault_log_path: /var/log/vault
+  openbao_version: 2.5.4
   ```
-- Vault TLS configuration
+
+  OpenBao installation Paths
 
   ```yml
-  vault_enable_tls: false
-  vault_key: ""
-  vault_cert: ""
+  openbao_bin_path: /usr/local/bin
+  openbao_config_path: /etc/openbao
+  openbao_tls_path: /etc/openbao/tls
+  openbao_plugin_path: /usr/local/lib/openbao/plugins
+  openbao_data_path: /var/lib/openbao
+  openbao_log_path: /var/log/openbao
+  ```
+
+- OpenBao TLS configuration
+
+  ```yml
+  openbao_enable_tls: false
+  openbao_key: ""
+  openbao_cert: ""
   custom_ca: false
-  vault_ca: ""
-  # vault service dns
-  vault_dns: ""
+  openbao_ca: ""
+  # OpenBao service dns
+  openbao_dns: ""
   ```
 
-  To enable configuration of TLS set `vault_enable_tls` to true and provide the private key and public certificate as content loaded into `vault_key` and `vault_cert` variables.
+  To enable configuration of TLS set `openbao_enable_tls` to true and provide the private key and public certificate as
+  content loaded into `openbao_key` and `openbao_cert` variables.
 
-  if custom CA has been used to sign the TLS certificates, `custom_ca` need to be set to true, and CA certificate need to be loaded int `vault-ca` variable.
+  if custom CA has been used to sign the TLS certificates, `custom_ca` need to be set to true, and CA certificate need
+  to be loaded int `OpenBao-ca` variable.
 
-  Set `vault_dns` to FQDN of vault service used to issue the Certificate.
+  Set `openbao_dns` to FQDN of OpenBao service used to issue the certificate.
 
   They can be loaded from files using an ansible task like:
 
   ```yml
   - name: Load tls key and cert from files
-  set_fact:
-    vault_key: "{{ lookup('file','certificates/{{ inventory_hostname }}_private.key') }}"
-    vault_cert: "{{ lookup('file','certificates/{{ inventory_hostname }}_public.crt') }}"
-    vault_ca: "{{ lookup('file','certificates/ca.crt') }}"
+    set_fact:
+      openbao_key: "{{ lookup('file','certificates/{{ inventory_hostname }}_private.key') }}"
+      openbao_cert: "{{ lookup('file','certificates/{{ inventory_hostname }}_public.crt') }}"
+      openbao_ca: "{{ lookup('file','certificates/ca.crt') }}"
   ```
 
-- Vault inititialize
+- OpenBao initialisation
 
   ```yml
-  vault_init: false
-  vault_key_shares: 1
-  vault_key_threshold: 1
-  vault_keys_output: "{{ vault_config_path }}/unseal.json"
+  openbao_init: false
+  openbao_key_shares: 1
+  openbao_key_threshold: 1
+  openbao_keys_output: "{{ openbao_config_path }}/unseal.json"
   ```
 
-  To automatically initialize vault, set `vault_init` to true, and provide `vault_key_shares` and `vault_key_thershold` variables to specify the number of unseal keys to be generated.
+  To automatically initialise OpenBao, set `openbao_init` to true, and provide `openbao_key_shares` and
+  `openbao_key_thershold` variables to specify the number of unseal keys to be generated.
 
-  Initialization will generate json file, `vault_keys_output`, containing keys and root token
+  Initialisation will generate JSON file, `openbao_keys_output`, containing the unseal keys and root token
 
-- Vault unseal and unseal service
-  
+- OpenBao unseal and unseal service
+
   ```yml
-  vault_unseal: false
-  vault_unseal_service: false
+  openbao_unseal: false
+  openbao_unseal_service: false
   ```
 
-  To automatically unseal vault, set `vault_unseal` to true. The unsealing process will use keys from `vault_keys_output` file
+  To automatically unseal OpenBao, set `openbao_unseal` to true. The unsealing process will use keys from
+  `openbao_keys_output` file
 
-  Systemd service can be created to automatically unseal vault whenever vault service is started or restarted. To enable it, set `vault_unseal_service` to true. Oneshot `vault-unseal`. This service also uses `vault_keys_output` file.
-
+  Systemd service can be created to automatically unseal OpenBao whenever OpenBao service is started or restarted. To
+  enable it, set `openbao_unseal_service` to true. Oneshot `OpenBao-unseal`. This service also uses
+  `openbao_keys_output` file.
 
 - KV secrets engine
 
   KV version 2 secret engine can be automatically enabled providing the following variables
 
   ```yml
-  vault_kv_secrets:
+  openbao_kv_secrets:
     path: secret
   ```
 
-  KV version 2 will be anabled at path `secret`
-
+  KV version 2 will be enabled at path `secret`
 
 - Policies
 
@@ -120,72 +123,24 @@ Available variables are listed below along with default values (see `defaults\ma
         }
   ```
 
-Dependencies
-------------
+## Dependencies
 
 None
 
-Development environment (uv)
-----------------------------
+## Example Playbook
 
-You can use [uv](https://docs.astral.sh/uv/) to create and manage a local Python virtual environment with all tooling required for this role:
-
-- ansible
-- molecule (docker driver/plugin)
-- ansible-lint
-- yamllint
-
-
-
-Setup:
-
-```shell
-uv sync
-```
-
-Run tools through `uv`:
-
-```shell
-# Ansible
-uv run ansible --version
-
-# Linting
-uv run ansible-lint .
-uv run yamllint .
-
-# Molecule (Docker must be available and running)
-uv run molecule test -s default
-uv run molecule test -s tls
-```
-
-You can also use `Makefile` shortcuts:
-
-```shell
-make sync
-make lint
-make molecule SCENARIO=tls
-```
-
-Optionally activate the environment:
-
-```shell
-source .venv/bin/activate
-```
-
-Example Playbook
-----------------
-
-The following playbook install and configure vault, enabling TLS and generating custom CA signed SSL certificates.
-It initializes and unseals Vault. It also enable KV version 2 at `secret` path and create a couple of polocies (`read` and `write`)
+The following playbook install and configure OpenBao, enabling TLS and generating custom CA signed SSL certificates. It
+initialises and unseals OpenBao. It also enables KV version 2 at `secret` path and create a couple of policies (`read`
+and `write`)
 
 ```yml
 ---
-- name: Install and configure Vault Server
-  hosts: vault-server
+- name: Install and configure OpenBao Server
+  hosts: OpenBao-server
   become: true
   gather_facts: true
   vars:
-    server_hostname: vault.ricsanfre.com
+    server_hostname: OpenBao.ricsanfre.com
     ssl_key_size: 4096
     key_type: RSA
     country_name: ES
@@ -209,21 +164,21 @@ It initializes and unseals Vault. It also enable KV version 2 at `secret` path a
 
     - name: Load tls key and cert
       set_fact:
-        vault_key: "{{ lookup('file', 'certificates/' + server_hostname + '.key') }}"
-        vault_cert: "{{ lookup('file', 'certificates/' + server_hostname + '.pem') }}"
-        vault_ca: "{{ lookup('file', 'certificates/CA.pem') }}"
+        openbao_key: "{{ lookup('file', 'certificates/' + server_hostname + '.key') }}"
+        openbao_cert: "{{ lookup('file', 'certificates/' + server_hostname + '.pem') }}"
+        openbao_ca: "{{ lookup('file', 'certificates/CA.pem') }}"
 
   roles:
-    - role: ricsanfre.vault
-      vault_enable_tls: true
+    - role: ricsanfre.OpenBao
+      openbao_enable_tls: true
       custom_ca: true
-      vault_init: true
-      vault_unseal: true
-      vault_unseal_service: true
+      openbao_init: true
+      openbao_unseal: true
+      openbao_unseal_service: true
       tls_skip_verify: true
       display_init_response: true
       # Configure KV
-      vault_kv_secrets:
+      openbao_kv_secrets:
         path: secret
 
       # Policies
@@ -237,10 +192,11 @@ It initializes and unseals Vault. It also enable KV version 2 at `secret` path a
           hcl: |
             path "secret/*" {
               capabilities = [ "read" ]
-            }      
+            }
 ```
 
-`pre-tasks` section include tasks to generate a custom CA, and vault's private key and  certificate and load them into `vault_key`, `vault_cert` and `vault-ca` variables.
+`pre-tasks` section include tasks to generate a custom CA, and OpenBao's private key and certificate and load them into
+`openbao_key`, `openbao_cert` and `OpenBao-ca` variables.
 
 Where `generate_custom_ca.yml` contain the tasks for generating a custom CA:
 
@@ -278,7 +234,8 @@ Where `generate_custom_ca.yml` contain the tasks for generating a custom CA:
 
 ```
 
-And `generate_ca_signed_certificate.yml` contain the tasks for generating Vault's key and certifica signed by custom CA:
+And `generate_ca_signed_certificate.yml` contain the tasks for generating OpenBao's key and certificate signed by custom
+CA:
 
 ```yml
 ---
@@ -308,13 +265,10 @@ And `generate_ca_signed_certificate.yml` contain the tasks for generating Vault'
     ownca_privatekey_path: certificates/CA.key
 ```
 
-
-License
--------
+## License
 
 MIT
 
-Author Information
-------------------
+## Author Information
 
-Created by Ricardo Sanchez (ricsanfre)
+Created by Olaf Lipinski, from the role by Ricardo Sanchez (ricsanfre)

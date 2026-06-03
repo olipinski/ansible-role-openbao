@@ -1,16 +1,16 @@
 ---
 
-- name: Reload vault systemd
+- name: Reload OpenBao systemd service
   ansible.builtin.systemd:
-    name: vault
+    name: openbao
     daemon_reload: true
 
-- name: Reload vault-unseal systemd
+- name: Reload OpenBao-unseal systemd service
   ansible.builtin.systemd:
-    name: vault-unseal
+    name: openbao-unseal
     daemon_reload: true
 
-- name: Restart vault
+- name: Restart OpenBao
   ansible.builtin.service:
-    name: vault
+    name: openbao
     state: restarted

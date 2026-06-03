@@ -1,0 +1,56 @@
+---
+# /sys/health
+#  https://openbao.org/api-docs/system/health/
+# The default status codes are:
+#   200 if initialised, unsealed, and active
+#   429 if unsealed and standby
+#   501 if not initialised
+#   503 if sealed
+
+- name: Check if OpenBao it initialised
+  ansible.builtin.uri:
+    url: "{{ openbao_api_dns_url }}/v1/sys/health"
+    validate_certs: "{{ tls_skip_verify | ternary('false', 'true') }}"
+    status_code: 200,429,501,503
+  register: openbao_health_response
+  run_once: true
+
+- name: Initialise OpenBao
+  no_log: false
+  run_once: true
+  when:
+    - openbao_health_response.status == 501
+  block:
+    - name: OpenBao initialise
+      ansible.builtin.uri:
+        url: "{{ openbao_api_dns_url }}/v1/sys/init"
+        body:
+          secret_shares: "{{ openbao_key_shares }}"
+          secret_threshold: "{{ openbao_key_threshold }}"
+        body_format: json
+        method: PUT
+        validate_certs: "{{ tls_skip_verify | ternary('false', 'true') }}"
+      register: init_openbao_response
+
+    - name: Save OpenBao root token and unseal keys
+      ansible.builtin.set_fact:
+        openbao_root_token: "{{ init_openbao_response.json.root_token }}"
+        openbao_keys: "{{ init_openbao_response.json.keys_base64 }}"
+
+    - name: Copy OpenBao unseal keys
+      ansible.builtin.copy:
+        content: "{{ init_openbao_response.json }}"
+        dest: "{{ openbao_keys_output }}"
+        owner: "{{ openbao_user }}"
+        group: "{{ openbao_group }}"
+        mode: "0600"
+
+    - name: Display OpenBao root token
+      ansible.builtin.debug:
+        msg: "OpenBao root Token: {{ openbao_root_token }}"
+      when: display_init_response | bool
+
+    - name: Display OpenBao unseal keys
+      ansible.builtin.debug:
+        msg: "OpenBao unseal keys: {{ openbao_keys }}"
+      when: display_init_response | bool

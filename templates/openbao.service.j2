@@ -1,15 +1,15 @@
 # {{ ansible_managed }}
 
 [Unit]
-Description="HashiCorp Vault - A tool for managing secrets"
-Documentation=https://www.vaultproject.io/docs/
+Description="OpenBao - An open source tool for managing secrets"
+Documentation=https://openbao.org/docs/
 Requires=network-online.target
 After=network-online.target
-ConditionPathExists={{ vault_main_config }}
+ConditionPathExists={{ openbao_main_config }}
 
 [Service]
-User={{ vault_user }}
-Group={{ vault_group }}
+User={{ openbao_user }}
+Group={{ openbao_group }}
 ProtectSystem=full
 ProtectHome=read-only
 PrivateTmp=yes
@@ -20,16 +20,16 @@ AmbientCapabilities=CAP_SYSLOG CAP_IPC_LOCK
 CapabilityBoundingSet=CAP_SYSLOG CAP_IPC_LOCK
 NoNewPrivileges=yes
 
-{% if vault_http_proxy %}
-Environment=HTTP_PROXY={{ vault_http_proxy }}
+{% if openbao_http_proxy %}
+Environment=HTTP_PROXY={{ openbao_http_proxy }}
 {% endif -%}
-{% if vault_https_proxy %}
-Environment=HTTPS_PROXY={{ vault_https_proxy }}
+{% if openbao_https_proxy %}
+Environment=HTTPS_PROXY={{ openbao_https_proxy }}
 {% endif %}
-{% if vault_no_proxy -%}
-Environment=NO_PROXY={{ vault_no_proxy }}
+{% if openbao_no_proxy -%}
+Environment=NO_PROXY={{ openbao_no_proxy }}
 {% endif -%}
-ExecStart=/bin/sh -c 'exec {{ vault_bin_path }}/vault server -config={{ vault_main_config  }} -log-level={{ vault_log_level | lower }}'
+ExecStart=/bin/sh -c 'exec {{ openbao_bin_path }}/bao server -config={{ openbao_main_config  }} -log-level={{ openbao_log_level | lower }}'
 ExecReload=/bin/kill --signal HUP $MAINPID
 KillMode=process
 KillSignal=SIGINT

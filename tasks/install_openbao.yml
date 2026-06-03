@@ -1,51 +1,51 @@
 ---
 - name: Ensure unzip package is installed
   ansible.builtin.package:
-    name: '{{ vault_package_list | list }}'
+    name: '{{ openbao_package_list | list }}'
     state: 'present'
     update_cache: true
   register: pkg_install_result
   until: pkg_install_result is success
 
-- name: Download Vault binary
+- name: Download OpenBao binary
   ansible.builtin.get_url:
-    url: "{{ vault_zip_url }}"
-    dest: "/tmp/{{ vault_pkg }}"
+    url: "{{ openbao_zip_url }}"
+    dest: "/tmp/{{ openbao_pkg }}"
     owner: "root"
     group: "root"
     mode: "0755"
-    checksum: "sha256:{{ (lookup('url', vault_checksum_file_url, wantlist=true) | select('match', '.*' + vault_pkg + '$') | first).split()[0] }}"
+    checksum: "sha256:{{ (lookup('url', openbao_checksum_file_url, wantlist=true) | select('match', '.*' + openbao_pkg + '$') | first).split()[0] }}"
     validate_certs: false
   register: _download_server
   until: _download_server is succeeded
   retries: 5
   delay: 2
 
-- name: Unarchive Vault
+- name: Unarchive OpenBao
   ansible.builtin.unarchive:
-    src: "/tmp/{{ vault_pkg }}"
+    src: "/tmp/{{ openbao_pkg }}"
     dest: "/tmp/"
-    creates: "/tmp/vault"
+    creates: "/tmp/openbao"
     remote_src: true
   become: true
   run_once: true
 
-- name: Install Vault
+- name: Install OpenBao
   become: true
   ansible.builtin.copy:
-    src: "/tmp/vault"
-    dest: "{{ vault_bin_path }}"
-    owner: "{{ vault_user }}"
-    group: "{{ vault_group }}"
+    src: "/tmp/openbao"
+    dest: "{{ openbao_bin_path }}"
+    owner: "{{ openbao_user }}"
+    group: "{{ openbao_group }}"
     mode: "0755"
     remote_src: true
-  notify: Restart vault
+  notify: Restart OpenBao
 
-- name: Cleaninig files
+- name: Clean up temporary files
   become: true
   ansible.builtin.file:
     path: "{{ item }}"
     state: "absent"
   with_items:
-    - "/tmp/vault"
-    - "/tmp/{{ vault_pkg }}"
+    - "/tmp/openbao"
+    - "/tmp/{{ openbao_pkg }}"

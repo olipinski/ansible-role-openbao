@@ -6,7 +6,7 @@ arch_map:
   armv7l: 'arm'
   armv6l: 'arm6vl'
 
-vault_architecture: "{{ arch_map[ansible_facts['architecture']] | default(ansible_facts['architecture']) }}"
+openbao_architecture: "{{ arch_map[ansible_facts['architecture']] | default(ansible_facts['architecture']) }}"
 
-vault_package_list:
+openbao_package_list:
   - unzip
