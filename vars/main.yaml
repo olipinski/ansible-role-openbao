@@ -7,6 +7,3 @@ arch_map:
   armv6l: 'arm6vl'
 
 openbao_architecture: "{{ arch_map[ansible_facts['architecture']] | default(ansible_facts['architecture']) }}"
-
-openbao_package_list:
-  - unzip

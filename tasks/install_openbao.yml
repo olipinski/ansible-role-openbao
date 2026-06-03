@@ -1,12 +1,4 @@
 ---
-- name: Ensure unzip package is installed
-  ansible.builtin.package:
-    name: '{{ openbao_package_list | list }}'
-    state: 'present'
-    update_cache: true
-  register: pkg_install_result
-  until: pkg_install_result is success
-
 - name: Download OpenBao binary
   ansible.builtin.get_url:
     url: "{{ openbao_zip_url }}"
