@@ -20,7 +20,8 @@ openbao_data_path: /var/lib/openbao
 openbao_log_path: /var/log/openbao
 
 # OpenBao config
-openbao_main_config: "{{ openbao_config_path }}/openbao_main.hcl"
+openbao_main_config: "{{ openbao_config_path }}/openbao_main.json"
+openbao_enable_telemetry: false
 openbao_log: "{{ openbao_log_path }}/openbao.log"
 openbao_http_proxy: ""
 openbao_https_proxy: ""

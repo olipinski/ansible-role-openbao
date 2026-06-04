@@ -12,7 +12,7 @@
     shell: "/usr/sbin/nologin"
 
 - name: Check OpenBao installation
-  ansible.builtin.shell: command -v bao
+  ansible.builtin.command: command -v bao
   environment:
     PATH: "{{ openbao_bin_path }}:{{ ansible_facts['env']['PATH'] }}"
   register: openbao_installation
@@ -58,7 +58,7 @@
 - name: OpenBao main configuration
   become: true
   ansible.builtin.template:
-    src: "openbao_main_configuration.hcl.j2"
+    src: "openbao_main_configuration.json.j2"
     dest: "{{ openbao_main_config }}"
     owner: "{{ openbao_user }}"
     group: "{{ openbao_group }}"
