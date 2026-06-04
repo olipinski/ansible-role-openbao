@@ -59,19 +59,36 @@ display_init_response: false
 openbao_unseal: false
 openbao_unseal_service: false
 
-# # Configure KV
+## Configure KV
 # openbao_kv_secrets:
-#   path: secret
-
-# # Policies
+# path: secret
+#
+## Policies
 # policies:
-#   - name: write
-#     hcl: |
-#       path "secret/*" {
-#         capabilities = [ "create", "read", "update", "delete", "list", "patch" ]
-#       }
-#   - name: read
-#     hcl: |
-#       path "secret/*" {
-#         capabilities = [ "read" ]
-#       }
+# - name: write
+#   json: |
+#     {
+#      "path":{
+#        "secret/*":{
+#          "capabilities":[
+#            "create",
+#            "read",
+#            "update",
+#            "delete",
+#            "list",
+#            "patch"
+#          ]
+#        }
+#      }
+#    }
+# - name: read
+#   json: |
+#     {
+#      "path":{
+#        "secret/*":{
+#          "capabilities":[
+#            "read"
+#          ]
+#        }
+#      }
+#    }

@@ -44,6 +44,7 @@
         owner: "{{ openbao_user }}"
         group: "{{ openbao_group }}"
         mode: "0600"
+      when: openbao_keys_output
 
     - name: Display OpenBao root token
       ansible.builtin.debug:

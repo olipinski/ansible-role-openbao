@@ -1,10 +1,9 @@
 ---
-
 - name: Test policies
   ansible.builtin.assert:
     that:
       - policy.name is defined
-      - policy.hcl is defined
+      - policy.json is defined
     quiet: true
 
 - name: Get status of policy
@@ -26,7 +25,7 @@
       X-Vault-Token: "{{ openbao_root_token }}"
     body:
       name: "{{ policy.name }}"
-      policy: "{{ policy.hcl }}"
+      policy: "{{ policy.json }}"
     body_format: json
     validate_certs: "{{ tls_skip_verify | ternary('false', 'true') }}"
     status_code:
