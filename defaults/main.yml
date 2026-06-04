@@ -5,9 +5,8 @@ openbao_user: openbao
 
 # OpenBao package
 openbao_version: 2.5.4
-openbao_pkg: "openbao_{{ openbao_version }}_{{ openbao_os }}_{{ openbao_architecture }}.zip"
-openbao_shasums: "openbao_{{ openbao_version }}_SHA256SUMS"
-openbao_tar_url: "https://github.com/openbao/openbao/releases/download/v{{ openbao_version }}/bao_{{ openbao_version }}_Linux_{{ openbao_architecture }}.tar.gz"
+openbao_pkg: "bao_{{ openbao_version }}_Linux_{{ openbao_architecture }}.tar.gz"
+openbao_tar_file_url: "https://github.com/openbao/openbao/releases/download/v{{ openbao_version }}/bao_{{ openbao_version }}_Linux_{{ openbao_architecture }}.tar.gz" # noqa: yaml[line-length]
 openbao_checksum_file_url: "https://github.com/openbao/openbao/releases/download/v{{ openbao_version }}/checksums-linux.txt"
 
 # OpenBao installation Paths
