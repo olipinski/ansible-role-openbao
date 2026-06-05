@@ -12,7 +12,7 @@
     method: GET
     headers:
       X-Vault-Token: "{{ openbao_root_token }}"
-    validate_certs: "{{ tls_skip_verify | ternary('false', 'true') }}"
+    validate_certs: "{{ openbao_tls_skip_verify | ternary('false', 'true') }}"
   failed_when:
     - false
   register: openbao_policies
@@ -27,7 +27,7 @@
       name: "{{ policy.name }}"
       policy: "{{ policy.json }}"
     body_format: json
-    validate_certs: "{{ tls_skip_verify | ternary('false', 'true') }}"
+    validate_certs: "{{ openbao_tls_skip_verify | ternary('false', 'true') }}"
     status_code:
       - 200
       - 204

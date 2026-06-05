@@ -48,11 +48,12 @@ openbao_api_dns_url: "{{ openbao_protocol }}://{{ openbao_hostname }}:{{ openbao
 
 # Initialise OpenBao
 openbao_init: false
-tls_skip_verify: false
+openbao_tls_skip_verify: false
 openbao_key_shares: 1
 openbao_key_threshold: 1
+openbao_save_keys_to_file: false
 openbao_keys_output: "{{ openbao_config_path }}/unseal.json"
-display_init_response: false
+openbao_display_init_response: false
 
 # Unseal OpenBao and install OpenBao unseal service
 openbao_unseal: false

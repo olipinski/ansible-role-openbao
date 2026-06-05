@@ -10,7 +10,7 @@
 - name: Check if OpenBao it initialised
   ansible.builtin.uri:
     url: "{{ openbao_api_dns_url }}/v1/sys/health"
-    validate_certs: "{{ tls_skip_verify | ternary('false', 'true') }}"
+    validate_certs: "{{ openbao_tls_skip_verify | ternary('false', 'true') }}"
     status_code: 200,429,501,503
   register: openbao_health_response
   run_once: true
@@ -29,7 +29,7 @@
           secret_threshold: "{{ openbao_key_threshold }}"
         body_format: json
         method: PUT
-        validate_certs: "{{ tls_skip_verify | ternary('false', 'true') }}"
+        validate_certs: "{{ openbao_tls_skip_verify | ternary('false', 'true') }}"
       register: init_openbao_response
 
     - name: Save OpenBao root token and unseal keys
@@ -44,14 +44,14 @@
         owner: "{{ openbao_user }}"
         group: "{{ openbao_group }}"
         mode: "0600"
-      when: openbao_keys_output
+      when: openbao_save_keys_to_file | bool
 
     - name: Display OpenBao root token
       ansible.builtin.debug:
         msg: "OpenBao root Token: {{ openbao_root_token }}"
-      when: display_init_response | bool
+      when: openbao_display_init_response | bool
 
     - name: Display OpenBao unseal keys
       ansible.builtin.debug:
         msg: "OpenBao unseal keys: {{ openbao_keys }}"
-      when: display_init_response | bool
+      when: openbao_display_init_response | bool

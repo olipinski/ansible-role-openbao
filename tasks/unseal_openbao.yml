@@ -3,7 +3,7 @@
 - name: Check if OpenBao is sealed
   ansible.builtin.uri:
     url: "{{ openbao_api_dns_url }}/v1/sys/health"
-    validate_certs: "{{ tls_skip_verify | ternary('false', 'true') }}"
+    validate_certs: "{{ openbao_tls_skip_verify | ternary('false', 'true') }}"
     status_code: 200,429,472,501,503
   register: openbao_health_response
   run_once: true
@@ -15,7 +15,7 @@
       key: "{{ item }}"
     body_format: json
     method: PUT
-    validate_certs: "{{ tls_skip_verify | ternary('false', 'true') }}"
+    validate_certs: "{{ openbao_tls_skip_verify | ternary('false', 'true') }}"
   register: unseal_openbao_response
   no_log: true
   run_once: true

@@ -72,6 +72,7 @@ Available variables are listed below along with default values (see `defaults\ma
   openbao_init: false
   openbao_key_shares: 1
   openbao_key_threshold: 1
+  openbao_save_keys_to_file: false
   openbao_keys_output: "{{ openbao_config_path }}/unseal.json"
   ```
 
@@ -81,8 +82,8 @@ Available variables are listed below along with default values (see `defaults\ma
   > [!CAUTION]
   > Initialisation can also output the keys to a file as per below. Use only for testing.
 
-  When `openbao_keys_output` is set, initialisation will generate a JSON file containing the unseal keys and root token.
-  This file is a pre-requisite for the unseal service.
+  When `openbao_save_keys_to_file` is set, initialisation will generate a JSON file containing the unseal keys and root
+  token, and write them to `openbao_keys_output`. This file is a pre-requisite for the unseal service.
 
 - OpenBao unseal service
 
