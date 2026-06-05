@@ -187,8 +187,8 @@ and `write`)
       openbao_init: true
       openbao_unseal: true
       openbao_unseal_service: true
-      tls_skip_verify: true
-      display_init_response: true
+      openbao_tls_skip_verify: true
+      openbao_display_init_response: true
       # Configure KV
       openbao_kv_secrets:
         path: secret

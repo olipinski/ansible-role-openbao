@@ -11,7 +11,7 @@ KEYS_FILE=/etc/openbao/unseal.json
 
 LOG={{ openbao_log }}
 
-SKIP_TLS_VERIFY={{ tls_skip_verify | ternary("true", "false") }}
+SKIP_TLS_VERIFY={{ openbao_tls_skip_verify | ternary("true", "false") }}
 
 if [ true = "$SKIP_TLS_VERIFY" ]
 then
