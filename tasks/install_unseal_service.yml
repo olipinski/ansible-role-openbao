@@ -13,7 +13,7 @@
 - name: Copy OpenBao unseal script
   ansible.builtin.template:
     dest: "{{ openbao_config_path }}/openbao-unseal.sh"
-    src: "vault-unseal.sh.j2"
+    src: "openbao-unseal.sh.j2"
     owner: "{{ openbao_user }}"
     group: "{{ openbao_group }}"
     mode: "0744"
