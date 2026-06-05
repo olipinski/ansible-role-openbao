@@ -10,143 +10,133 @@ None
 
 Available variables are listed below along with default values (see `defaults\main.yaml`)
 
-- OpenBao server installation details
+### OpenBao installation
 
-  OpenBao UNIX user/group
+OpenBao UNIX user/group
 
-  ```yml
-  openbao_group: openbao
-  openbao_user: openbao
-  ```
+```yml
+openbao_group: openbao
+openbao_user: openbao
+openbao_version: 2.5.4
+openbao_bin_path: /usr/local/bin
+openbao_config_path: /etc/openbao
+openbao_tls_path: /etc/openbao/tls
+openbao_plugin_path: /usr/local/lib/openbao/plugins
+openbao_data_path: /var/lib/openbao
+openbao_log_path: /var/log/openbao
+```
 
-  OpenBao package and version to be installed
+### OpenBao TLS configuration
 
-  ```yml
-  openbao_version: 2.5.4
-  ```
+```yml
+openbao_enable_tls: false
+openbao_key: ""
+openbao_cert: ""
+custom_ca: false
+openbao_ca: ""
+# OpenBao service dns
+openbao_dns: ""
+```
 
-  OpenBao installation Paths
+To enable configuration of TLS set `openbao_enable_tls` to true and provide the private key and public certificate as
+content loaded into `openbao_key` and `openbao_cert` variables.
 
-  ```yml
-  openbao_bin_path: /usr/local/bin
-  openbao_config_path: /etc/openbao
-  openbao_tls_path: /etc/openbao/tls
-  openbao_plugin_path: /usr/local/lib/openbao/plugins
-  openbao_data_path: /var/lib/openbao
-  openbao_log_path: /var/log/openbao
-  ```
+if custom CA has been used to sign the TLS certificates, `custom_ca` need to be set to true, and CA certificate need to
+be loaded int `openbao-ca` variable.
 
-- OpenBao TLS configuration
+Set `openbao_dns` to FQDN of OpenBao service used to issue the certificate.
 
-  ```yml
-  openbao_enable_tls: false
-  openbao_key: ""
-  openbao_cert: ""
-  custom_ca: false
-  openbao_ca: ""
-  # OpenBao service dns
-  openbao_dns: ""
-  ```
+They can be loaded from files using an ansible task like:
 
-  To enable configuration of TLS set `openbao_enable_tls` to true and provide the private key and public certificate as
-  content loaded into `openbao_key` and `openbao_cert` variables.
+```yml
+- name: Load tls key and cert from files
+  set_fact:
+    openbao_key: "{{ lookup('file','certificates/{{ inventory_hostname }}_private.key') }}"
+    openbao_cert: "{{ lookup('file','certificates/{{ inventory_hostname }}_public.crt') }}"
+    openbao_ca: "{{ lookup('file','certificates/ca.crt') }}"
+```
 
-  if custom CA has been used to sign the TLS certificates, `custom_ca` need to be set to true, and CA certificate need
-  to be loaded int `openbao-ca` variable.
+### OpenBao initialisation
 
-  Set `openbao_dns` to FQDN of OpenBao service used to issue the certificate.
+```yml
+openbao_init: false
+openbao_key_shares: 1
+openbao_key_threshold: 1
+openbao_save_keys_to_file: false
+openbao_keys_output: "{{ openbao_config_path }}/unseal.json"
+```
 
-  They can be loaded from files using an ansible task like:
+To automatically initialise OpenBao, set `openbao_init` to true, and provide `openbao_key_shares` and
+`openbao_key_thershold` variables to specify the number of unseal keys to be generated.
 
-  ```yml
-  - name: Load tls key and cert from files
-    set_fact:
-      openbao_key: "{{ lookup('file','certificates/{{ inventory_hostname }}_private.key') }}"
-      openbao_cert: "{{ lookup('file','certificates/{{ inventory_hostname }}_public.crt') }}"
-      openbao_ca: "{{ lookup('file','certificates/ca.crt') }}"
-  ```
+> [!CAUTION]
+> Initialisation can also output the keys to a file as per below. Use only for testing.
 
-- OpenBao initialisation
+When `openbao_save_keys_to_file` is set, initialisation will generate a JSON file containing the unseal keys and root
+token, and write them to `openbao_keys_output`. This file is a pre-requisite for the unseal service.
 
-  ```yml
-  openbao_init: false
-  openbao_key_shares: 1
-  openbao_key_threshold: 1
-  openbao_save_keys_to_file: false
-  openbao_keys_output: "{{ openbao_config_path }}/unseal.json"
-  ```
+### OpenBao unseal service
 
-  To automatically initialise OpenBao, set `openbao_init` to true, and provide `openbao_key_shares` and
-  `openbao_key_thershold` variables to specify the number of unseal keys to be generated.
+> [!CAUTION]
+> This is completely insecure, and NOT recommended for production setups. This option stores the root token as a text
+> file. Use only for testing.
 
-  > [!CAUTION]
-  > Initialisation can also output the keys to a file as per below. Use only for testing.
+```yml
+openbao_unseal: false
+openbao_unseal_service: false
+```
 
-  When `openbao_save_keys_to_file` is set, initialisation will generate a JSON file containing the unseal keys and root
-  token, and write them to `openbao_keys_output`. This file is a pre-requisite for the unseal service.
+To automatically unseal OpenBao, set `openbao_unseal` to true. The unsealing process will use keys from
+`openbao_keys_output` file.
 
-- OpenBao unseal service
+Systemd service can be created to automatically unseal OpenBao whenever OpenBao service is started or restarted. To
+enable it, set `openbao_unseal_service` to true.
 
-  > [!CAUTION]
-  > This is completely insecure, and NOT recommended for production setups. This option stores the root token as a text
-  > file. Use only for testing.
+### KV secrets engine
 
-  ```yml
-  openbao_unseal: false
-  openbao_unseal_service: false
-  ```
+KV version 2 secret engine can be automatically enabled providing the following variables
 
-  To automatically unseal OpenBao, set `openbao_unseal` to true. The unsealing process will use keys from
-  `openbao_keys_output` file.
+```yml
+openbao_kv_secrets:
+  path: secret
+```
 
-  Systemd service can be created to automatically unseal OpenBao whenever OpenBao service is started or restarted. To
-  enable it, set `openbao_unseal_service` to true.
+KV version 2 will be enabled at path `secret`
 
-- KV secrets engine
+### Policies
 
-  KV version 2 secret engine can be automatically enabled providing the following variables
+ACL policies can be automatically configured, providing a name and the hcl content.
 
-  ```yml
-  openbao_kv_secrets:
-    path: secret
-  ```
-
-  KV version 2 will be enabled at path `secret`
-
-- Policies
-
-  ACL policies can be automatically configured, providing a name and the hcl content.
-
-  ```yml
-  policies:
-  - name: write
-    json: |
-      {
-        "path":{
-          "secret/*":{
-            "capabilities":[
-              "create",
-              "read",
-              "update",
-              "delete",
-              "list",
-              "patch"
-            ]
-          }
+```yml
+policies:
+- name: write
+  json: |
+    {
+      "path":{
+        "secret/*":{
+          "capabilities":[
+            "create",
+            "read",
+            "update",
+            "delete",
+            "list",
+            "patch"
+          ]
         }
       }
-  - name: read
-    json: |
-      {
-        "path":{
-          "secret/*":{
-            "capabilities":[
-              "read"
-            ]
-          }
+    }
+- name: read
+  json: |
+    {
+      "path":{
+        "secret/*":{
+          "capabilities":[
+            "read"
+          ]
         }
       }
-  ```
+    }
+```
 
 ## Dependencies
 

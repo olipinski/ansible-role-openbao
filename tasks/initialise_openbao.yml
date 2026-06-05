@@ -32,19 +32,19 @@
         validate_certs: "{{ openbao_tls_skip_verify | ternary('false', 'true') }}"
       register: init_openbao_response
 
-    - name: Save OpenBao root token and unseal keys
+    - name: Set OpenBao root token and unseal key facts
       ansible.builtin.set_fact:
         openbao_root_token: "{{ init_openbao_response.json.root_token }}"
         openbao_keys: "{{ init_openbao_response.json.keys_base64 }}"
 
-    - name: Copy OpenBao unseal keys
+    - name: Write OpenBao unseal keys to file
       ansible.builtin.copy:
         content: "{{ init_openbao_response.json }}"
         dest: "{{ openbao_keys_output }}"
         owner: "{{ openbao_user }}"
         group: "{{ openbao_group }}"
         mode: "0600"
-      when: openbao_save_keys_to_file | bool
+      when: (openbao_save_keys_to_file | bool) or (openbao_unseal_service | bool)
 
     - name: Display OpenBao root token
       ansible.builtin.debug:
