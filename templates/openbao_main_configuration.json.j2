@@ -1,0 +1,35 @@
+{
+    "cluster_addr": "{{ openbao_cluster_url }}",
+    "api_addr": "{{ openbao_api_url }}",
+
+    "plugin_directory": "{{ openbao_plugin_path }}",
+
+    "listener": {
+      "tcp": {
+        "address": "0.0.0.0:8200",
+        {% if openbao_enable_tls %}
+        "tls_cert_file": "{{ openbao_tls_path }}/openbao.crt",
+        "tls_key_file": "{{ openbao_tls_path }}/openbao.key",
+        "tls_disable_client_certs": true,
+        {% else %}
+        "tls_disable": true,
+        {% endif %}
+        },
+    },
+
+    "storage": {
+      "raft": {
+        "path": "{{ openbao_data_path }}"
+      }
+    },
+    {% if openbao_custom_configuration is defined %}
+    {{ openbao_custom_configuration }}
+    {% endif %}
+
+    {% if openbao_enable_telemetry %}
+    "telemetry": {
+      "prometheus_retention_time": "30s",
+      "disable_hostname": true,
+    }
+    {% endif %}
+}

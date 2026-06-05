@@ -1,32 +1,29 @@
 ---
-name: CI
+name: CI/CD
 'on':
   workflow_dispatch:
   pull_request:
     paths:
       - 'defaults/**'
       - 'handlers/**'
-      - 'library/**'
       - 'meta/**'
-      - 'molecule/**'
       - 'tasks/**'
       - 'templates/**'
       - 'vars/**'
+      - 'tests/**'
       - '*.yml'
       - '*.yaml'
   push:
     branches:
       - main
-      - master
     paths:
       - 'defaults/**'
       - 'handlers/**'
-      - 'library/**'
       - 'meta/**'
-      - 'molecule/**'
       - 'tasks/**'
       - 'templates/**'
       - 'vars/**'
+      - 'tests/**'
       - '*.yml'
       - '*.yaml'
 
@@ -35,10 +32,9 @@ name: CI
 
 defaults:
   run:
-    working-directory: 'ricsanfre.vault'
+    working-directory: 'olipinski.openbao'
 
 jobs:
-
   lint:
     name: Lint
     runs-on: ubuntu-latest
@@ -46,7 +42,7 @@ jobs:
       - name: Check out the codebase.
         uses: actions/checkout@v6
         with:
-          path: 'ricsanfre.vault'
+          path: 'olipinski.openbao'
 
       - name: Set up Python 3.
         uses: actions/setup-python@v6
@@ -60,37 +56,3 @@ jobs:
         run: |
           yamllint .
           ansible-lint .
-  molecule:
-    name: Molecule (${{ matrix.scenario }}, ${{ matrix.distro.os }}-${{ matrix.distro.release }})
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        scenario:
-          - default
-          - tls
-        distro:
-          - os: ubuntu
-            release: 24.04
-          - os: ubuntu
-            release: 22.04
-    steps:
-      - name: Check out the codebase.
-        uses: actions/checkout@v6
-        with:
-          path: 'ricsanfre.vault'
-
-      - name: Set up Python 3.
-        uses: actions/setup-python@v6
-        with:
-          python-version: '3.x'
-
-      - name: Install test dependencies.
-        run: pip3 install ansible molecule molecule-plugins[docker] docker yamllint ansible-lint
-
-      - name: Run Molecule tests.
-        run: molecule test -s ${{ matrix.scenario }}
-        env:
-          PY_COLORS: '1'
-          ANSIBLE_FORCE_COLOR: '1'
-          MOLECULE_DISTRO: ${{ matrix.distro.os }}
-          MOLECULE_RELEASE: ${{ matrix.distro.release }}

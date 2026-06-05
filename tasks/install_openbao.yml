@@ -1,0 +1,59 @@
+---
+- name: Download OpenBao checksum file
+  ansible.builtin.get_url:
+    url: "{{ openbao_checksum_file_url }}"
+    dest: "/tmp/{{ openbao_pkg + '_checksums.txt' }}"
+    owner: "root"
+    group: "root"
+    mode: "0755"
+  register: _download_server
+  until: _download_server is succeeded
+  retries: 5
+  delay: 2
+
+- name: Read OpenBao checksum file
+  ansible.builtin.slurp:
+    src: "/tmp/{{ openbao_pkg + '_checksums.txt' }}"
+  register: checksums
+
+- name: Download OpenBao binary
+  ansible.builtin.get_url:
+    url: "{{ openbao_tar_file_url }}"
+    dest: "/tmp/{{ openbao_pkg }}"
+    owner: "root"
+    group: "root"
+    mode: "0755"
+    checksum: "sha256:{{ (checksums['content'] | b64decode | regex_findall('.*' + '  ' + openbao_pkg) | first).split()[0] }}"
+  register: _download_server
+  until: _download_server is succeeded
+  retries: 5
+  delay: 2
+
+- name: Unarchive OpenBao
+  ansible.builtin.unarchive:
+    src: "/tmp/{{ openbao_pkg }}"
+    dest: "/tmp/"
+    creates: "/tmp/bao"
+    remote_src: true
+  become: true
+  run_once: true
+
+- name: Install OpenBao
+  become: true
+  ansible.builtin.copy:
+    src: "/tmp/bao"
+    dest: "{{ openbao_bin_path }}"
+    owner: "{{ openbao_user }}"
+    group: "{{ openbao_group }}"
+    mode: "0755"
+    remote_src: true
+  notify: Restart OpenBao
+
+- name: Clean up temporary files
+  become: true
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: "absent"
+  with_items:
+    - "/tmp/bao"
+    - "/tmp/{{ openbao_pkg }}"

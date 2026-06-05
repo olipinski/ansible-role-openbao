@@ -1,22 +1,23 @@
 ---
 galaxy_info:
-  role_name: vault
-  author: ricsanfre
-  description: Vault hashicorp installation and configuration role
+  role_name: openbao
+  author: olipinski
+  description: Role for installing and configuring OpenBao
 
   license: license (MIT)
 
-  min_ansible_version: "2.11"
+  min_ansible_version: "2.14"
 
   platforms:
     - name: Ubuntu
       versions:
         - jammy
         - noble
+        - resolute
 
   galaxy_tags:
     - system
-    - vault
+    - openbao
     - secrets
 
 dependencies: []

@@ -10,28 +10,28 @@
     - curl
     - jq
 
-- name: Copy unseal script
+- name: Copy OpenBao unseal script
   ansible.builtin.template:
-    dest: "{{ vault_config_path }}/vault-unseal.sh"
-    src: "vault-unseal.sh.j2"
-    owner: "{{ vault_user }}"
-    group: "{{ vault_group }}"
+    dest: "{{ openbao_config_path }}/openbao-unseal.sh"
+    src: "openbao-unseal.sh.j2"
+    owner: "{{ openbao_user }}"
+    group: "{{ openbao_group }}"
     mode: "0744"
   become: true
 
-- name: Create the Vault unseal service systemd config
+- name: Create the OpenBao-unseal service systemd config
   ansible.builtin.template:
-    src: vault-unseal.service.j2
-    dest: "/etc/systemd/system/vault-unseal.service"
+    src: openbao-unseal.service.j2
+    dest: "/etc/systemd/system/openbao-unseal.service"
     owner: "root"
     group: "root"
     mode: "0644"
   become: true
   notify:
-    - Reload vault-unseal systemd
+    - Reload OpenBao-unseal systemd service
 
-- name: Ensure vault-unseal is started at boot
+- name: Ensure OpenBao-unseal is started at boot
   ansible.builtin.service:
-    name: vault-unseal
+    name: openbao-unseal
     enabled: true
   become: true

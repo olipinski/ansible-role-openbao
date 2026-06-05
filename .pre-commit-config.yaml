@@ -1,0 +1,46 @@
+---
+exclude: docs|design
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-symlinks
+      - id: destroyed-symlinks
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-toml
+      - id: check-added-large-files
+      - id: check-merge-conflict
+      - id: check-executables-have-shebangs
+      - id: check-shebang-scripts-are-executable
+        exclude: j2|kubernetes/
+      - id: detect-private-key
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.4.2
+    hooks:
+      - id: codespell
+        args:
+          - --builtin
+          - clear,rare,informal # Add 'usage' if mixins can be rephrased
+  - repo: https://github.com/executablebooks/mdformat
+    rev: 1.0.0
+    hooks:
+      - id: mdformat
+        additional_dependencies:
+          - mdformat-gfm
+          - mdformat-black
+          - mdformat-gfm-alerts
+        args:
+          - --wrap=120
+        types: [markdown]
+  - repo: https://github.com/ansible/ansible-lint
+    rev: v26.4.0
+    hooks:
+      - id: ansible-lint
+        args:
+          - --strict # https://github.com/ansible/ansible-lint/issues/4997
+          - --format=brief
+          - -q
+          - -q
+        additional_dependencies:
+          - ansible

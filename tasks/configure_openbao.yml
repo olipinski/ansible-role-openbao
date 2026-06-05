@@ -1,0 +1,52 @@
+---
+
+- name: Load root token from file
+  ansible.builtin.command: "jq -r '.root_token' {{ openbao_keys_output }}"
+  register: root_token
+  become: true
+  changed_when: false
+  when: openbao_root_token is not defined
+
+- name: Set token variable
+  ansible.builtin.set_fact:
+    openbao_root_token: "{{ root_token.stdout }}"
+  when: openbao_root_token is not defined
+
+- name: Get status of kv secrets engine
+  ansible.builtin.uri:
+    url: "{{ openbao_api_dns_url }}/v1/sys/mounts"
+    method: GET
+    headers:
+      X-Vault-Token: "{{ openbao_root_token }}"
+    validate_certs: "{{ openbao_tls_skip_verify | ternary('false', 'true') }}"
+  failed_when:
+    - false
+  register: openbao_status_kv_secrets_engine
+
+- name: Enable kv secrets engine
+  ansible.builtin.uri:
+    url: "{{ openbao_api_dns_url }}/v1/sys/mounts/{{ openbao_kv_secrets.path }}"
+    method: POST
+    headers:
+      X-Vault-Token: "{{ openbao_root_token }}"
+    body:
+      type: kv
+      description: "key/value secret storage"
+      options:
+        version: 2
+    body_format: json
+    validate_certs: "{{ openbao_tls_skip_verify | ternary('false', 'true') }}"
+    status_code:
+      - 200
+      - 204
+  when:
+    - 'openbao_kv_secrets.path + "/" not in openbao_status_kv_secrets_engine.json.data'
+
+- name: Create policies
+  ansible.builtin.include_tasks:
+    file: create_policy.yml
+  loop: "{{ policies }}"
+  loop_control:
+    loop_var: policy
+  when:
+    - policies is defined

@@ -1,0 +1,18 @@
+# {{ ansible_managed }}
+
+[Unit]
+Description=OpenBao unseal
+After=openbao.service
+Requires=openbao.service
+PartOf=openbao.service
+
+[Service]
+Type=oneshot
+User={{ openbao_user }}
+Group={{ openbao_group }}
+ExecStartPre=/bin/sleep 10
+ExecStart=/bin/sh -c '/etc/openbao/openbao-unseal.sh'
+RemainAfterExit=false
+
+[Install]
+WantedBy=multi-user.target openbao.service

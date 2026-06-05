@@ -1,1 +1,6 @@
 .venv/
+# pixi environments
+.pixi/*
+!.pixi/config.toml
+.idea/
+.ansible

@@ -1,42 +1,42 @@
 ---
-- name: Create vault group
+- name: Create OpenBao unix group
   ansible.builtin.group:
-    name: "{{ vault_group }}"
+    name: "{{ openbao_group }}"
     state: present
 
-- name: Create vault user
+- name: Create OpenBao unix user
   ansible.builtin.user:
-    name: "{{ vault_user }}"
-    group: "{{ vault_group }}"
+    name: "{{ openbao_user }}"
+    group: "{{ openbao_group }}"
     system: "yes"
     shell: "/usr/sbin/nologin"
 
-- name: Check Vault installation
-  ansible.builtin.shell: command -v vault  # noqa command-instead-of-shell  # command is a shell builtin
+- name: Check OpenBao installation
+  ansible.builtin.command: command -v bao
   environment:
-    PATH: "{{ vault_bin_path }}:{{ ansible_facts['env']['PATH'] }}"
-  register: vault_installation
+    PATH: "{{ openbao_bin_path }}:{{ ansible_facts['env']['PATH'] }}"
+  register: openbao_installation
   changed_when: false
   failed_when: false
   check_mode: false
 
-- name: Get installed Vault version
+- name: Get installed OpenBao version
   ansible.builtin.shell: |
     set -o pipefail
-    {{ vault_bin_path }}/vault -version | cut -d' ' -f2 | tr -d 'v'
+    {{ openbao_bin_path }}/bao -version | cut -d' ' -f2 | tr -d 'v'
   args:
     executable: /bin/bash
-  when: vault_installation.rc == 0
+  when: openbao_installation.rc == 0
   changed_when: false
   check_mode: false
-  register: installed_vault_version
+  register: installed_openbao_version
 
-- name: Compute if installation is required
+- name: Check if installation is required
   ansible.builtin.set_fact:
-    installation_required: "{{ vault_installation.rc != 0 or installed_vault_version.stdout != vault_version }}"
+    installation_required: "{{ openbao_installation.rc != 0 or installed_openbao_version.stdout != openbao_version }}"
 
-- name: Install vault binary
-  ansible.builtin.include_tasks: install_vault.yml
+- name: Install OpenBao binary
+  ansible.builtin.include_tasks: install_openbao.yml
   when: installation_required
 
 - name: Create directories
@@ -44,96 +44,96 @@
   ansible.builtin.file:
     dest: "{{ item }}"
     state: directory
-    owner: "{{ vault_user }}"
-    group: "{{ vault_group }}"
+    owner: "{{ openbao_user }}"
+    group: "{{ openbao_group }}"
     mode: "0750"
   with_items:
-    - "{{ vault_config_path }}"
-    - "{{ vault_tls_path }}"
-    - "{{ vault_plugin_path }}"
-    - "{{ vault_policy_path }}"
-    - "{{ vault_data_path }}"
-    - "{{ vault_log_path }}"
+    - "{{ openbao_config_path }}"
+    - "{{ openbao_tls_path }}"
+    - "{{ openbao_plugin_path }}"
+    - "{{ openbao_policy_path }}"
+    - "{{ openbao_data_path }}"
+    - "{{ openbao_log_path }}"
 
-- name: Vault main configuration
+- name: OpenBao main configuration
   become: true
   ansible.builtin.template:
-    src: "vault_main_configuration.hcl.j2"
-    dest: "{{ vault_main_config }}"
-    owner: "{{ vault_user }}"
-    group: "{{ vault_group }}"
+    src: "openbao_main_configuration.json.j2"
+    dest: "{{ openbao_main_config }}"
+    owner: "{{ openbao_user }}"
+    group: "{{ openbao_group }}"
     mode: "0400"
     backup: "true"
   notify:
-    - Restart vault
-    - Reload vault systemd
+    - Restart OpenBao
+    - Reload OpenBao systemd service
 
 - name: Copy TLS private key file
   ansible.builtin.copy:
-    dest: "{{ vault_tls_path }}/vault.key"
-    content: "{{ vault_key }}"
-    owner: "{{ vault_user }}"
-    group: "{{ vault_group }}"
+    dest: "{{ openbao_tls_path }}/openbao.key"
+    content: "{{ openbao_key }}"
+    owner: "{{ openbao_user }}"
+    group: "{{ openbao_group }}"
     mode: "0644"
   become: true
-  when: vault_enable_tls
-  notify: Restart vault
+  when: openbao_enable_tls
+  notify: Restart OpenBao
 
 - name: Copy cert file
   ansible.builtin.copy:
-    dest: "{{ vault_tls_path }}/vault.crt"
-    content: "{{ vault_cert }}"
-    owner: "{{ vault_user }}"
-    group: "{{ vault_group }}"
+    dest: "{{ openbao_tls_path }}/openbao.crt"
+    content: "{{ openbao_cert }}"
+    owner: "{{ openbao_user }}"
+    group: "{{ openbao_group }}"
     mode: "0644"
   become: true
-  when: vault_enable_tls
-  notify: Restart vault
+  when: openbao_enable_tls
+  notify: Restart OpenBao
 
 - name: Copy CA cert file
   ansible.builtin.copy:
-    dest: "{{ vault_tls_path }}/vault-ca.crt"
-    content: "{{ vault_ca }}"
-    owner: "{{ vault_user }}"
-    group: "{{ vault_group }}"
+    dest: "{{ openbao_tls_path }}/openbao-ca.crt"
+    content: "{{ openbao_ca }}"
+    owner: "{{ openbao_user }}"
+    group: "{{ openbao_group }}"
     mode: "0644"
   become: true
-  when: vault_enable_tls and custom_ca
-  notify: Restart vault
+  when: openbao_enable_tls and custom_ca
+  notify: Restart OpenBao
 
-- name: Create the Vault server systemd config
+- name: Setup the OpenBao server systemd service
   ansible.builtin.template:
-    src: vault.service.j2
-    dest: "/etc/systemd/system/vault.service"
+    src: openbao.service.j2
+    dest: "/etc/systemd/system/openbao.service"
     owner: "root"
     group: "root"
     mode: "0644"
   notify:
-    - Reload vault systemd
-    - Restart vault
+    - Reload OpenBao systemd service
+    - Restart OpenBao
 
 - name: Flush handlers
   ansible.builtin.meta: flush_handlers
 
-- name: Ensure vault is started at boot
+- name: Ensure OpenBao is started at boot
   ansible.builtin.service:
-    name: vault
+    name: openbao
     enabled: true
 
-- name: Initialize Vault
-  ansible.builtin.include_tasks: initialize_vault.yml
-  when: vault_init
+- name: Initialize OpenBao
+  ansible.builtin.include_tasks: initialise_openbao.yml
+  when: openbao_init
 
-- name: Useal Vault
-  ansible.builtin.include_tasks: unseal_vault.yml
-  when: vault_unseal
+- name: Unseal OpenBao
+  ansible.builtin.include_tasks: unseal_openbao.yml
+  when: openbao_unseal
 
-- name: Install unseal service
+- name: Install OpenBao-unseal service
   ansible.builtin.include_tasks: install_unseal_service.yml
-  when: vault_unseal_service
+  when: openbao_unseal_service
 
 - name: Run configuration tasks
   ansible.builtin.include_tasks:
-    file: configure_vault.yml
+    file: configure_openbao.yml
   when:
-    - vault_kv_secrets is defined
+    - openbao_kv_secrets is defined
