@@ -30,7 +30,7 @@ while [ -z "$initialised" ]
 do
   sleep 10
   echo "$(timestamp): Waiting for OpenBao to start..." | tee -a $LOG
-  initialized=$(curl $CURL_PARAMS $URL/v1/sys/health | jq '.initialized')
+  initialised=$(curl $CURL_PARAMS $URL/v1/sys/health | jq '.initialized')
 done
 
 if [ true = "$initialised" ]
