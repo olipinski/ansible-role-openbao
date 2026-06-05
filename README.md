@@ -118,9 +118,9 @@ Available variables are listed below along with default values (see `defaults\ma
 
   ```yml
   policies:
-    - name: write
-      json: |
-       {
+  - name: write
+    json: |
+      {
         "path":{
           "secret/*":{
             "capabilities":[
@@ -134,17 +134,17 @@ Available variables are listed below along with default values (see `defaults\ma
           }
         }
       }
-    - name: read
-      json: |
-        {
-         "path":{
-           "secret/*":{
-             "capabilities":[
-               "read"
-             ]
-           }
-         }
-       }
+  - name: read
+    json: |
+      {
+        "path":{
+          "secret/*":{
+            "capabilities":[
+              "read"
+            ]
+          }
+        }
+      }
   ```
 
 ## Dependencies

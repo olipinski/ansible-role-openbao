@@ -66,7 +66,7 @@
     backup: "true"
   notify:
     - Restart OpenBao
-    - Reload OpenBao systemd
+    - Reload OpenBao systemd service
 
 - name: Copy TLS private key file
   ansible.builtin.copy:
@@ -109,7 +109,7 @@
     group: "root"
     mode: "0644"
   notify:
-    - Reload OpenBao systemd
+    - Reload OpenBao systemd service
     - Restart OpenBao
 
 - name: Flush handlers

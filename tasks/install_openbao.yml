@@ -23,7 +23,7 @@
     owner: "root"
     group: "root"
     mode: "0755"
-    checksum: "sha256:{{ (checksums['content'] | b64decode | regex_findall(openbao_pkg) | first).split()[0] }}"
+    checksum: "sha256:{{ (checksums['content'] | b64decode | regex_findall('.*' + '  ' + openbao_pkg) | first).split()[0] }}"
   register: _download_server
   until: _download_server is succeeded
   retries: 5

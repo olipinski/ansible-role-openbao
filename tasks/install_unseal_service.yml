@@ -28,7 +28,7 @@
     mode: "0644"
   become: true
   notify:
-    - Reload openbao-unseal systemd
+    - Reload OpenBao-unseal systemd service
 
 - name: Ensure OpenBao-unseal is started at boot
   ansible.builtin.service:
